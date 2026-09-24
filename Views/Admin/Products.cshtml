@@ -1,0 +1,38 @@
+﻿@model List<UTHMBargain.Models.Product>
+@{
+    ViewData["Title"] = "Manage Listings";
+}
+<h2 class="section-title">Manage Listings</h2>
+<div class="card">
+    <table class="table mb-0">
+        <thead>
+            <tr><th>Title</th><th>Seller</th><th>Price</th><th>Status</th><th>Created</th><th></th></tr>
+        </thead>
+        <tbody>
+            @foreach (var p in Model)
+            {
+                <tr>
+                    <td><a asp-controller="Products" asp-action="Details" asp-route-id="@p.Id">@p.Title</a></td>
+                    <td>@p.Seller!.FullName</td>
+                    <td class="price-tag">RM @p.Price.ToString("F2")</td>
+                    <td>@p.Status</td>
+                    <td><small class="text-muted">@p.CreatedAt.ToLocalTime().ToString("dd MMM yyyy")</small></td>
+                    <td class="d-flex gap-1">
+                        <form asp-action="FlagProduct" method="post">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="id" value="@p.Id" />
+                            <button class="btn btn-sm btn-outline-primary">
+                                @(p.Status == UTHMBargain.Models.ProductStatus.Flagged ? "Unflag" : "Flag")
+                            </button>
+                        </form>
+                        <form asp-action="RemoveProduct" method="post" onsubmit="return confirm('Remove this listing?');">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="id" value="@p.Id" />
+                            <button class="btn btn-sm btn-danger">Remove</button>
+                        </form>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>

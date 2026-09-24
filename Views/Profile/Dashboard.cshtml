@@ -1,0 +1,196 @@
+﻿@model UTHMBargain.Services.UserAnalytics
+@{
+    ViewData["Title"] = "My Dashboard"; var user = (UTHMBargain.Models.ApplicationUser)ViewBag.User;
+}
+
+<h2 class="section-title mb-3">👤 My Personal Dashboard</h2>
+
+<!-- ============ KPIs ============ -->
+<div class="row g-3 mb-4">
+    <div class="col-md-6 col-lg-3">
+        <div class="kpi-card">
+            <div class="d-flex justify-content-between align-items-start">
+                <div>
+                    <div class="kpi-label">Total Spent</div>
+                    <div class="kpi-value">RM @Model.TotalSpent.ToString("N2")</div>
+                    <div class="text-muted small mt-1">@Model.PurchaseCount purchases</div>
+                </div>
+                <div class="kpi-icon"><i class="fa-solid fa-bag-shopping"></i></div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6 col-lg-3">
+        <div class="kpi-card">
+            <div class="d-flex justify-content-between align-items-start">
+                <div>
+                    <div class="kpi-label">Total Earned</div>
+                    <div class="kpi-value">RM @Model.TotalEarned.ToString("N2")</div>
+                    <div class="text-muted small mt-1">@Model.SalesCount sales</div>
+                </div>
+                <div class="kpi-icon"><i class="fa-solid fa-money-bill-trend-up"></i></div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6 col-lg-3">
+        <div class="kpi-card">
+            <div class="d-flex justify-content-between align-items-start">
+                <div>
+                    <div class="kpi-label">Rating Received</div>
+                    <div class="kpi-value">@Model.AvgStarsReceived.ToString("F1") ⭐</div>
+                    <div class="text-muted small mt-1">From buyers & sellers</div>
+                </div>
+                <div class="kpi-icon"><i class="fa-solid fa-star"></i></div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6 col-lg-3">
+        <div class="kpi-card">
+            <div class="d-flex justify-content-between align-items-start">
+                <div>
+                    <div class="kpi-label">Net Balance</div>
+                    <div class="kpi-value @((Model.TotalEarned - Model.TotalSpent) < 0 ? "text-danger" : "")">
+                        RM @((Model.TotalEarned - Model.TotalSpent).ToString("N2"))
+                    </div>
+                    <div class="text-muted small mt-1">Earned − Spent</div>
+                </div>
+                <div class="kpi-icon"><i class="fa-solid fa-scale-balanced"></i></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ============ AI INSIGHTS ============ -->
+<div class="chart-card mb-4">
+    <h6><i class="fa-solid fa-wand-magic-sparkles me-1 text-accent"></i> AI Insights For You</h6>
+    @foreach (var insight in Model.Insights)
+    {
+        <div class="insight-box">@Html.Raw(insight.Replace("**", "<strong>").Replace("**", "</strong>"))</div>
+    }
+</div>
+
+<!-- ============ CHARTS ============ -->
+<div class="row g-3 mb-4">
+    <div class="col-lg-8">
+        <div class="chart-card">
+            <h6>Spending vs Earning (Last 6 Months)</h6>
+            <canvas id="spendChart"></canvas>
+        </div>
+    </div>
+    <div class="col-lg-4">
+        <div class="chart-card">
+            <h6>My Favorite Categories</h6>
+            @if (Model.FavoriteCategories.Any())
+            {
+                <canvas id="favCategoriesChart"></canvas>
+            }
+            else
+            {
+                <div class="text-muted small">No purchases yet.</div>
+            }
+        </div>
+    </div>
+</div>
+
+<!-- ============ RATING TREND ============ -->
+@if (Model.RatingTrend.Any())
+{
+    <div class="chart-card mb-4">
+        <h6>My Rating Trend</h6>
+        <canvas id="ratingChart"></canvas>
+    </div>
+}
+
+@section Scripts {
+    <script>
+        // Spending vs Earning
+        new Chart(document.getElementById('spendChart'), {
+            type: 'bar',
+            data: {
+                labels: [@Html.Raw(string.Join(",", Model.Monthly.Select(m => $"'{m.Month}'")))],
+                datasets: [
+                    {
+                        label: 'Spent',
+                        data: [@Html.Raw(string.Join(",", Model.Monthly.Select(m => m.Spent.ToString(System.Globalization.CultureInfo.InvariantCulture))))],
+                        backgroundColor: '#ff5c5c',
+                        borderRadius: 6
+                    },
+                    {
+                        label: 'Earned',
+                        data: [@Html.Raw(string.Join(",", Model.Monthly.Select(m => m.Earned.ToString(System.Globalization.CultureInfo.InvariantCulture))))],
+                        backgroundColor: '#c8ff3a',
+                        borderRadius: 6
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { labels: { color: '#9aa0a6', font: { family: 'Sora' } } }
+                },
+                scales: {
+                    x: { ticks: { color: '#9aa0a6' }, grid: { color: '#2a2e33' } },
+                    y: { ticks: { color: '#9aa0a6', callback: v => 'RM ' + v }, grid: { color: '#2a2e33' } }
+                }
+            }
+        });
+
+        @if (Model.FavoriteCategories.Any())
+            {
+                <text>
+                        new Chart(document.getElementById('favCategoriesChart'), {
+                            type: 'polarArea',
+                        data: {
+                            labels: [@Html.Raw(string.Join(",", Model.FavoriteCategories.Select(c => $"'{c.Name}'")))],
+                        datasets: [{
+                            data: [@Html.Raw(string.Join(",", Model.FavoriteCategories.Select(c => c.Count)))],
+                        backgroundColor: ['rgba(200,255,58,0.7)', 'rgba(255,209,102,0.7)', 'rgba(107,217,104,0.7)', 'rgba(120,180,255,0.7)', 'rgba(255,92,92,0.7)']
+                                }]
+                            },
+                        options: {
+                            responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {position: 'bottom', labels: {color: '#9aa0a6', font: {family: 'Sora', size: 11 } } }
+                                },
+                        scales: {r: {ticks: {color: '#5c6169', backdropColor: 'transparent' }, grid: {color: '#2a2e33' } } }
+                            }
+                        });
+                </text>
+        }
+
+            @if (Model.RatingTrend.Any())
+            {
+                <text>
+                        new Chart(document.getElementById('ratingChart'), {
+                            type: 'line',
+                        data: {
+                            labels: [@Html.Raw(string.Join(",", Model.RatingTrend.Select(r => $"'{r.Month}'")))],
+                        datasets: [{
+                            label: 'Avg Stars',
+                        data: [@Html.Raw(string.Join(",", Model.RatingTrend.Select(r => r.AvgStars.ToString(System.Globalization.CultureInfo.InvariantCulture))))],
+                        borderColor: '#ffd166',
+                        backgroundColor: 'rgba(255,209,102,0.15)',
+                        fill: true,
+                        tension: 0.35,
+                        pointRadius: 5,
+                        pointBackgroundColor: '#ffd166',
+                        borderWidth: 2
+                                }]
+                            },
+                        options: {
+                            responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            x: {ticks: {color: '#9aa0a6' }, grid: {color: '#2a2e33' } },
+                        y: {min: 0, max: 5, ticks: {color: '#9aa0a6', stepSize: 1 }, grid: {color: '#2a2e33' } }
+                                },
+                        plugins: {
+                            legend: {labels: {color: '#9aa0a6', font: {family: 'Sora' } } }
+                                }
+                            }
+                        });
+                </text>
+        }
+    </script>
+}

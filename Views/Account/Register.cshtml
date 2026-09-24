@@ -1,0 +1,71 @@
+﻿@model UTHMBargain.Models.ViewModels.RegisterViewModel
+@{
+    ViewData["Title"] = "Sign Up";
+}
+
+<div class="auth-card">
+    <div class="text-center mb-3">
+        <div class="brand-logo mx-auto mb-2" style="width:52px;height:52px;font-size:1.4rem;"><i class="fa-solid fa-graduation-cap"></i></div>
+    </div>
+    <div class="auth-title text-center">Join UTHM Bargain</div>
+    <div class="auth-sub text-center">Exclusive to UTHM students · Verified with your matric number</div>
+
+    <form asp-action="Register" method="post">
+        <div asp-validation-summary="ModelOnly" class="alert alert-danger d-none"></div>
+        <div class="mb-3">
+            <label asp-for="FullName" class="form-label"></label>
+            <input asp-for="FullName" class="form-control" placeholder="e.g. Ahmad bin Ali" />
+            <span asp-validation-for="FullName" class="text-danger small"></span>
+        </div>
+        <div class="row">
+            <div class="col-md-6 mb-3">
+                <label asp-for="Email" class="form-label"></label>
+                <input asp-for="Email" class="form-control" placeholder="you@student.uthm.edu.my" />
+                <span asp-validation-for="Email" class="text-danger small"></span>
+            </div>
+            <div class="col-md-6 mb-3">
+                <label asp-for="MatricNumber" class="form-label"></label>
+                <input asp-for="MatricNumber" class="form-control" placeholder="AI220001" style="text-transform:uppercase" />
+                <span asp-validation-for="MatricNumber" class="text-danger small"></span>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-6 mb-3">
+                <label asp-for="Faculty" class="form-label"></label>
+                <select asp-for="Faculty" class="form-select">
+                    <option value="">Choose faculty</option>
+                    <option>FSKTM</option>
+                    <option>FKMP</option>
+                    <option>FKEE</option>
+                    <option>FKAAB</option>
+                    <option>FTK</option>
+                    <option>FAST</option>
+                    <option>FPTV</option>
+                    <option>FPTP</option>
+                    <option>Other</option>
+                </select>
+                <span asp-validation-for="Faculty" class="text-danger small"></span>
+            </div>
+            <div class="col-md-6 mb-3">
+                <label asp-for="Campus" class="form-label"></label>
+                <select asp-for="Campus" class="form-select">
+                    <option>Parit Raja</option>
+                    <option>Pagoh</option>
+                </select>
+            </div>
+        </div>
+        <div class="mb-3">
+            <label asp-for="Password" class="form-label"></label>
+            <input asp-for="Password" class="form-control" />
+            <span asp-validation-for="Password" class="text-danger small"></span>
+            <small class="text-muted">Min 8 chars, must include upper, lower, digit and symbol.</small>
+        </div>
+        <div class="mb-3">
+            <label asp-for="ConfirmPassword" class="form-label"></label>
+            <input asp-for="ConfirmPassword" class="form-control" />
+            <span asp-validation-for="ConfirmPassword" class="text-danger small"></span>
+        </div>
+        <button type="submit" class="btn btn-primary-accent w-100 py-2">Create My Account</button>
+        <p class="text-center mt-3 mb-0 small text-muted">Already have an account? <a asp-action="Login">Login</a></p>
+    </form>
+</div>

@@ -1,0 +1,40 @@
+﻿@model List<UTHMBargain.Models.Product>
+@{
+    ViewData["Title"] = "My Listings";
+}
+<div class="d-flex justify-content-between align-items-center">
+    <h2 class="section-title mb-0">My Listings</h2>
+    <a asp-action="Create" class="btn btn-primary-accent"><i class="fa-solid fa-plus me-1"></i> New Listing</a>
+</div>
+@if (!Model.Any())
+{
+    <div class="empty"><i class="fa-solid fa-tag"></i><p>No listings yet. Post your first item!</p></div>
+}
+else
+{
+    <div class="row g-3 mt-1">
+        @foreach (var p in Model)
+        {
+            <div class="col-md-4">
+                <div class="card product-card h-100">
+                    <img src="@(p.Images.FirstOrDefault()?.Url ?? "/images/placeholder.svg")" class="card-img-top" />
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div class="price-tag">RM @p.Price.ToString("F2")</div>
+                            <span class="badge badge-cond">@p.Status</span>
+                        </div>
+                        <div class="fw-semibold mt-1">@p.Title</div>
+                        <div class="d-flex gap-2 mt-3">
+                            <a asp-action="Details" asp-route-id="@p.Id" class="btn btn-sm btn-outline-light flex-fill">View</a>
+                            <a asp-action="Edit" asp-route-id="@p.Id" class="btn btn-sm btn-outline-primary flex-fill">Edit</a>
+                            <form asp-action="Delete" asp-route-id="@p.Id" method="post" onsubmit="return confirm('Remove this listing?');">
+                                @Html.AntiForgeryToken()
+                                <button class="btn btn-sm btn-danger"><i class="fa-solid fa-trash"></i></button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+}

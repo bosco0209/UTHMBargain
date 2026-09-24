@@ -1,0 +1,36 @@
+﻿@model UTHMBargain.Models.ViewModels.LoginViewModel
+@{
+    ViewData["Title"] = "Login";
+}
+
+<div class="auth-card">
+    <div class="text-center mb-3">
+        <div class="brand-logo mx-auto mb-2" style="width:52px;height:52px;font-size:1.4rem;"><i class="fa-solid fa-graduation-cap"></i></div>
+    </div>
+    <div class="auth-title text-center">Welcome Back</div>
+    <div class="auth-sub text-center">Sign in with your UTHM email</div>
+
+    <form asp-action="Login" method="post">
+        <div class="mb-3">
+            <label asp-for="Email" class="form-label"></label>
+            <input asp-for="Email" class="form-control" placeholder="you@student.uthm.edu.my" />
+            <span asp-validation-for="Email" class="text-danger small"></span>
+        </div>
+        <div class="mb-3">
+            <label asp-for="Password" class="form-label"></label>
+            <input asp-for="Password" class="form-control" />
+            <span asp-validation-for="Password" class="text-danger small"></span>
+        </div>
+        <div class="form-check mb-3">
+            <input asp-for="RememberMe" class="form-check-input" />
+            <label asp-for="RememberMe" class="form-check-label text-muted"></label>
+        </div>
+        <button type="submit" class="btn btn-primary-accent w-100 py-2">Login</button>
+        <p class="text-center mt-3 mb-0 small text-muted">New here? <a asp-action="Register">Create an account</a></p>
+        <hr />
+        <p class="text-center mb-0 small" style="color:var(--text-muted)">
+            <strong>Demo:</strong> demo@uthm.edu.my / Demo@123<br />
+            <strong>Admin:</strong> admin@uthm.edu.my / Admin@123
+        </p>
+    </form>
+</div>

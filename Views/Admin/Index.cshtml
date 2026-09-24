@@ -1,0 +1,55 @@
+﻿@{
+    ViewData["Title"] = "Admin Dashboard";
+}
+<h2 class="section-title">Admin Dashboard</h2>
+
+<div class="row g-3">
+    <div class="col-md-4 col-lg-3">
+        <div class="stat-card">
+            <div><div class="val">@ViewBag.UsersCount</div><div class="lbl">Users</div></div>
+            <div class="ico"><i class="fa-solid fa-users"></i></div>
+        </div>
+    </div>
+    <div class="col-md-4 col-lg-3">
+        <div class="stat-card">
+            <div><div class="val">@ViewBag.ActiveListings</div><div class="lbl">Active Listings</div></div>
+            <div class="ico"><i class="fa-solid fa-tags"></i></div>
+        </div>
+    </div>
+    <div class="col-md-4 col-lg-3">
+        <div class="stat-card">
+            <div><div class="val">@ViewBag.EscrowActive</div><div class="lbl">Active Escrows</div></div>
+            <div class="ico"><i class="fa-solid fa-shield-halved"></i></div>
+        </div>
+    </div>
+    <div class="col-md-4 col-lg-3">
+        <div class="stat-card">
+            <div><div class="val">@ViewBag.DisputesOpen</div><div class="lbl">Open Disputes</div></div>
+            <div class="ico"><i class="fa-solid fa-triangle-exclamation"></i></div>
+        </div>
+    </div>
+    <div class="col-md-4 col-lg-3">
+        <div class="stat-card">
+            <div><div class="val">@ViewBag.ReportsOpen</div><div class="lbl">Open Reports</div></div>
+            <div class="ico"><i class="fa-solid fa-flag"></i></div>
+        </div>
+    </div>
+    <div class="col-md-4 col-lg-3">
+        <div class="stat-card">
+            <div><div class="val">RM @ViewBag.RevenueHeld.ToString("F2")</div><div class="lbl">Held in Escrow</div></div>
+            <div class="ico"><i class="fa-solid fa-money-bill"></i></div>
+        </div>
+    </div>
+</div>
+
+<h2 class="section-title mt-4">Quick Links</h2>
+<div class="d-flex gap-2 flex-wrap">
+    <a asp-action="Users" class="btn btn-outline-light"><i class="fa-solid fa-users me-1"></i>Manage Users</a>
+    <a asp-action="Products" class="btn btn-outline-light"><i class="fa-solid fa-tags me-1"></i>Manage Listings</a>
+    <a asp-action="Disputes" class="btn btn-outline-light"><i class="fa-solid fa-triangle-exclamation me-1"></i>Disputes</a>
+    <a asp-action="Reports" class="btn btn-outline-light"><i class="fa-solid fa-flag me-1"></i>Reports</a>
+    <a asp-action="Escrows" class="btn btn-outline-light"><i class="fa-solid fa-shield-halved me-1"></i>All Escrows</a>
+    <a asp-action="Analytics" class="btn btn-primary-accent">
+        <i class="fa-solid fa-chart-pie me-1"></i>Analytics Dashboard
+    </a>
+</div>

@@ -1,0 +1,113 @@
+﻿@model UTHMBargain.Models.Product
+@using Microsoft.AspNetCore.Identity
+@using UTHMBargain.Models
+@inject UserManager<ApplicationUser> UserManager
+@{
+    ViewData["Title"] = Model.Title;
+    var uid = UserManager.GetUserId(User);
+}
+
+<div class="row g-4">
+    <div class="col-lg-7">
+        @{
+            var cover = Model.Images.FirstOrDefault(i => i.IsCover) ?? Model.Images.FirstOrDefault();
+        }
+        <img id="mainImg" src="@(cover?.Url ?? "/images/placeholder.svg")" class="product-hero-img" alt="@Model.Title" />
+        @if (Model.Images.Count > 1)
+        {
+            <div class="d-flex gap-2 mt-3 flex-wrap">
+                @foreach (var img in Model.Images)
+                {
+                    <img src="@img.Url" class="thumb @(img.Id == cover?.Id ? "active" : "")" onclick="document.getElementById('mainImg').src='@img.Url';document.querySelectorAll('.thumb').forEach(t=>t.classList.remove('active'));this.classList.add('active');" />
+                }
+            </div>
+        }
+    </div>
+
+    <div class="col-lg-5">
+        <div class="mb-2"><span class="badge badge-cond"><i class="fa-solid @Model.Category!.Icon me-1"></i>@Model.Category.Name</span></div>
+        <h1 class="mb-1" style="font-size:1.75rem;font-weight:700;letter-spacing:-0.02em;">@Model.Title</h1>
+        <div class="price-tag" style="font-size:2rem;">RM @Model.Price.ToString("F2")</div>
+        <div class="d-flex gap-3 mt-2 small text-muted">
+            <span><i class="fa-solid fa-star me-1 text-warning"></i>Condition: @Model.Condition</span>
+            <span><i class="fa-solid fa-location-dot me-1 text-accent"></i>@Model.Location</span>
+            <span><i class="fa-solid fa-eye me-1"></i>@Model.ViewCount views</span>
+        </div>
+
+        <hr class="my-3" />
+        <h5 class="fw-semibold">Description</h5>
+        <p class="text-muted" style="white-space:pre-wrap;">@Model.Description</p>
+
+        <hr class="my-3" />
+        <div class="seller-card">
+            <div class="d-flex align-items-center gap-3">
+                <img src="@(Model.Seller!.AvatarUrl ?? "/images/avatar.svg")" style="width:56px;height:56px;border-radius:50%;object-fit:cover;background:var(--surface-2);" />
+                <div>
+                    <div class="fw-semibold">@Model.Seller.FullName</div>
+                    <div class="small text-muted">@Model.Seller.Faculty · @Model.Seller.Campus</div>
+                    <div class="small">
+                        <span class="stars">@(new string('★', (int)Math.Round((double)ViewBag.SellerAvg)))@(new string('☆', 5 - (int)Math.Round((double)ViewBag.SellerAvg)))</span>
+                        <span class="text-muted">(@ViewBag.SellerCount reviews)</span>
+                    </div>
+                </div>
+                <a asp-controller="Profile" asp-action="Index" asp-route-id="@Model.Seller.Id" class="btn btn-outline-light btn-sm ms-auto">View Profile</a>
+            </div>
+        </div>
+
+        <div class="d-grid gap-2 mt-3">
+            @if (User.Identity!.IsAuthenticated && User.Identity.Name != Model.Seller.Email)
+            {
+                @if (Model.Status == UTHMBargain.Models.ProductStatus.Active)
+                {
+                    <form asp-controller="Escrow" asp-action="Start" method="post">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" name="productId" value="@Model.Id" />
+                        <button class="btn btn-primary-accent w-100 py-2"><i class="fa-solid fa-shield-halved me-1"></i> Buy with Escrow — RM @Model.Price.ToString("F2")</button>
+                    </form>
+                }
+                else
+                {
+                    <button class="btn btn-outline-light" disabled>@Model.Status</button>
+                }
+                <a asp-controller="Messages" asp-action="Start" asp-route-productId="@Model.Id" class="btn btn-outline-primary"><i class="fa-solid fa-comment me-1"></i> Message Seller</a>
+                <button type="button" class="btn btn-link text-muted small" data-bs-toggle="modal" data-bs-target="#reportModal">
+                    <i class="fa-solid fa-flag me-1"></i>Report this listing
+                </button>
+            }
+            else if (!User.Identity.IsAuthenticated)
+            {
+                <a asp-controller="Account" asp-action="Login" class="btn btn-primary-accent">Login to Buy</a>
+            }
+            else
+            {
+                <div class="alert alert-info small mb-0">This is your own listing. <a asp-action="Edit" asp-route-id="@Model.Id">Edit</a></div>
+            }
+        </div>
+    </div>
+</div>
+
+@if (User.Identity!.IsAuthenticated)
+{
+    <div class="modal fade" id="reportModal" tabindex="-1" aria-labelledby="reportModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content" style="background:var(--surface);border:1px solid var(--border);color:var(--text);">
+                <form asp-action="Report" method="post">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="id" value="@Model.Id" />
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="reportModalLabel">Report Listing</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <label class="form-label">Reason</label>
+                        <textarea name="reason" required class="form-control" rows="4" placeholder="Why is this listing suspicious?"></textarea>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-outline-light" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-danger">Submit Report</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+}

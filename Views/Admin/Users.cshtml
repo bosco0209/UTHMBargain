@@ -1,0 +1,30 @@
+﻿@model List<UTHMBargain.Models.ApplicationUser>
+@{
+    ViewData["Title"] = "Manage Users";
+}
+<h2 class="section-title">Manage Users</h2>
+<div class="card">
+    <table class="table mb-0">
+        <thead><tr><th>Name</th><th>Email</th><th>Matric</th><th>Faculty</th><th>Wallet</th><th>Status</th><th></th></tr></thead>
+        <tbody>
+            @foreach (var u in Model)
+            {
+                <tr>
+                    <td>@u.FullName</td>
+                    <td><small>@u.Email</small></td>
+                    <td>@u.MatricNumber</td>
+                    <td>@u.Faculty</td>
+                    <td class="price-tag">RM @u.WalletBalance.ToString("F2")</td>
+                    <td>@(u.IsBanned ? "Banned" : "Active")</td>
+                    <td>
+                        <form asp-action="ToggleBan" method="post">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="id" value="@u.Id" />
+                            <button class="btn btn-sm @(u.IsBanned ? "btn-outline-primary" : "btn-danger")">@(u.IsBanned ? "Unban" : "Ban")</button>
+                        </form>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>

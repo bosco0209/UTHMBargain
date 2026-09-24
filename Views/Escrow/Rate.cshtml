@@ -1,0 +1,30 @@
+﻿@model UTHMBargain.Models.ViewModels.RatingFormViewModel
+@{
+    ViewData["Title"] = "Rate Transaction";
+}
+<div class="row justify-content-center">
+    <div class="col-lg-6">
+        <h2 class="section-title">Rate Your Experience</h2>
+        <div class="card p-4">
+            <form asp-action="Rate" method="post">
+                @Html.AntiForgeryToken()
+                <input type="hidden" asp-for="EscrowTransactionId" />
+                <div class="mb-3 text-center">
+                    <label class="form-label d-block">How many stars?</label>
+                    <div class="rating-input">
+                        @for (int i = 5; i >= 1; i--)
+                        {
+                            <input type="radio" asp-for="Stars" value="@i" id="star-@i" />
+                            <label for="star-@i" title="@i stars"><i class="fa-solid fa-star"></i></label>
+                        }
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <label asp-for="Comment" class="form-label">Comment (optional)</label>
+                    <textarea asp-for="Comment" rows="4" class="form-control" placeholder="How was the experience?"></textarea>
+                </div>
+                <button type="submit" class="btn btn-primary-accent w-100">Submit Rating</button>
+            </form>
+        </div>
+    </div>
+</div>

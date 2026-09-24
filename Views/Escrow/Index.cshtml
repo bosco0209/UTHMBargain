@@ -1,0 +1,35 @@
+﻿@model List<UTHMBargain.Models.EscrowTransaction>
+@using Microsoft.AspNetCore.Identity
+@using UTHMBargain.Models
+@inject UserManager<ApplicationUser> UserManager
+@{
+    ViewData["Title"] = "My Escrows";
+    var uid = UserManager.GetUserId(User);
+}
+<h2 class="section-title">Escrow Transactions</h2>
+@if (!Model.Any())
+{
+    <div class="empty"><i class="fa-solid fa-shield-halved"></i><p>No escrow transactions yet.</p></div>
+}
+else
+{
+    <div class="card">
+        <table class="table mb-0">
+            <thead><tr><th>Code</th><th>Product</th><th>Role</th><th>Amount</th><th>Status</th><th>Date</th><th></th></tr></thead>
+            <tbody>
+                @foreach (var e in Model)
+                {
+                    <tr>
+                        <td><span class="escrow-code">@e.Code</span></td>
+                        <td>@e.Product!.Title</td>
+                        <td>@(e.BuyerId == uid ? "Buyer" : "Seller")</td>
+                        <td class="price-tag">RM @e.Amount.ToString("F2")</td>
+                        <td><span class="escrow-status status-@e.Status">@e.Status</span></td>
+                        <td><small class="text-muted">@e.CreatedAt.ToLocalTime().ToString("dd MMM yyyy")</small></td>
+                        <td><a asp-action="Details" asp-route-id="@e.Id" class="btn btn-sm btn-outline-primary">View</a></td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}

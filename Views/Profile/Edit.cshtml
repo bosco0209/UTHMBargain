@@ -1,0 +1,41 @@
+﻿@model UTHMBargain.Models.ApplicationUser
+@{
+    ViewData["Title"] = "Edit Profile";
+}
+<div class="row justify-content-center">
+    <div class="col-lg-7">
+        <h2 class="section-title">Edit Profile</h2>
+        <div class="card p-4">
+            <form asp-action="Edit" method="post" enctype="multipart/form-data">
+                @Html.AntiForgeryToken()
+                <div class="mb-3">
+                    <label class="form-label">Full Name</label>
+                    <input name="fullName" value="@Model.FullName" class="form-control" required />
+                </div>
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Faculty</label>
+                        <input name="faculty" value="@Model.Faculty" class="form-control" required />
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Campus</label>
+                        <select name="campus" class="form-select">
+                            <option selected="@(Model.Campus == "Parit Raja")">Parit Raja</option>
+                            <option selected="@(Model.Campus == "Pagoh")">Pagoh</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Bio</label>
+                    <textarea name="bio" rows="3" class="form-control">@Model.Bio</textarea>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Avatar</label>
+                    <input type="file" name="avatar" accept="image/*" class="form-control" />
+                </div>
+                <button type="submit" class="btn btn-primary-accent"><i class="fa-solid fa-check me-1"></i>Save Changes</button>
+                <a asp-action="Index" class="btn btn-outline-light">Cancel</a>
+            </form>
+        </div>
+    </div>
+</div>

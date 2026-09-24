@@ -1,0 +1,40 @@
+﻿@model List<UTHMBargain.Models.Report>
+@{
+    ViewData["Title"] = "Reports";
+}
+<h2 class="section-title">User Reports</h2>
+@if (!Model.Any())
+{
+    <div class="empty"><i class="fa-solid fa-flag"></i><p>No reports.</p></div>
+}
+else
+{
+    <div class="card">
+        <table class="table mb-0">
+            <thead>
+                <tr><th>Product</th><th>Reporter</th><th>Reason</th><th>Status</th><th></th></tr>
+            </thead>
+            <tbody>
+                @foreach (var r in Model)
+                {
+                    <tr>
+                        <td>@(r.Product?.Title ?? "—")</td>
+                        <td>@r.Reporter!.FullName</td>
+                        <td><small>@r.Reason</small></td>
+                        <td>@(r.Resolved ? "Resolved" : "Open")</td>
+                        <td>
+                            @if (!r.Resolved)
+                            {
+                                <form asp-action="ResolveReport" method="post">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="id" value="@r.Id" />
+                                    <button class="btn btn-sm btn-outline-primary">Mark Resolved</button>
+                                </form>
+                            }
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}

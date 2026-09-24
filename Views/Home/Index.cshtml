@@ -1,0 +1,131 @@
+﻿@{
+    ViewData["Title"] = "Home";
+    var featured = (List<UTHMBargain.Models.Product>)ViewBag.Featured;
+    var categories = (List<UTHMBargain.Models.Category>)ViewBag.Categories;
+}
+
+<section class="hero">
+    <div class="row align-items-center">
+        <div class="col-lg-7">
+            <div class="d-inline-flex align-items-center gap-2 px-3 py-1 rounded-pill mb-3" style="background:rgba(200,255,58,0.08);border:1px solid rgba(200,255,58,0.25);">
+                <i class="fa-solid fa-shield-halved text-accent"></i>
+                <span class="small" style="color:var(--text-muted)">Now with secure escrow — trade without fear</span>
+            </div>
+            <h1>The trusted <span class="accent">UTHM</span> marketplace<br />for students, by students.</h1>
+            <p class="lead">Buy and sell textbooks, laptops, bicycles and more with fellow UTHM students. Every deal is protected by our built-in escrow.</p>
+            <div class="d-flex gap-2 flex-wrap mt-3">
+                <a asp-controller="Products" asp-action="Index" class="btn btn-primary-accent btn-lg"><i class="fa-solid fa-magnifying-glass me-1"></i> Browse Listings</a>
+                @if (User.Identity!.IsAuthenticated)
+                {
+                    <a asp-controller="Products" asp-action="Create" class="btn btn-outline-light btn-lg"><i class="fa-solid fa-plus me-1"></i> Post a Listing</a>
+                }
+                else
+                {
+                    <a asp-controller="Account" asp-action="Register" class="btn btn-outline-light btn-lg"><i class="fa-solid fa-user-plus me-1"></i> Join with UTHM email</a>
+                }
+            </div>
+            <div class="hero-stats">
+                <div class="hero-stat"><div class="num">@ViewBag.Stats.Products</div><div class="lbl">Active Listings</div></div>
+                <div class="hero-stat"><div class="num">@ViewBag.Stats.Users</div><div class="lbl">Verified Students</div></div>
+                <div class="hero-stat"><div class="num">@ViewBag.Stats.Deals</div><div class="lbl">Safe Deals Done</div></div>
+            </div>
+        </div>
+        <div class="col-lg-5 text-center mt-5 mt-lg-0">
+            <div class="wallet-card d-inline-block text-start" style="min-width:340px;">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div class="text-muted small">Escrow-secured</div>
+                    <i class="fa-solid fa-shield-halved text-accent fa-lg"></i>
+                </div>
+                <div class="my-3 wallet-balance">RM 250.00</div>
+                <div class="d-flex justify-content-between small text-muted">
+                    <span>Held for: Physics Textbook</span>
+                    <span class="escrow-status status-Pending">Pending</span>
+                </div>
+                <div class="escrow-steps mt-4">
+                    <div class="escrow-step done"><div class="dot"><i class="fa-solid fa-lock"></i></div><div class="lbl">Paid</div></div>
+                    <div class="escrow-step done"><div class="dot"><i class="fa-solid fa-hand-holding"></i></div><div class="lbl">Handover</div></div>
+                    <div class="escrow-step"><div class="dot"><i class="fa-solid fa-check"></i></div><div class="lbl">Release</div></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="mt-4">
+    <h2 class="section-title">Shop by Category</h2>
+    <div class="d-flex flex-wrap">
+        @foreach (var c in categories)
+        {
+            <a asp-controller="Products" asp-action="Index" asp-route-CategoryId="@c.Id" class="category-chip">
+                <i class="fa-solid @c.Icon"></i> @c.Name
+            </a>
+        }
+    </div>
+</section>
+
+<section class="mt-5">
+    <div class="d-flex justify-content-between align-items-center">
+        <h2 class="section-title">Latest Listings</h2>
+        <a asp-controller="Products" asp-action="Index" class="btn btn-outline-primary btn-sm">View all <i class="fa-solid fa-arrow-right ms-1"></i></a>
+    </div>
+    @if (!featured.Any())
+    {
+        <div class="empty"><i class="fa-solid fa-box-open"></i><p>No listings yet. Be the first to sell!</p></div>
+    }
+    else
+    {
+        <div class="row g-3">
+            @foreach (var p in featured)
+            {
+                <div class="col-6 col-md-4 col-lg-3">
+                    <a asp-controller="Products" asp-action="Details" asp-route-id="@p.Id" class="text-decoration-none text-reset">
+                        <div class="card product-card h-100">
+                            <img src="@(p.Images.FirstOrDefault()?.Url ?? "/images/placeholder.svg")" class="card-img-top" alt="@p.Title" />
+                            <div class="card-body">
+                                <div class="price-tag">RM @p.Price.ToString("F2")</div>
+                                <div class="fw-semibold mt-1 text-truncate">@p.Title</div>
+                                <div class="d-flex justify-content-between align-items-center mt-2">
+                                    <span class="badge badge-cond">@p.Condition</span>
+                                    <small class="text-muted"><i class="fa-solid fa-location-dot"></i> @p.Location</small>
+                                </div>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+            }
+        </div>
+    }
+</section>
+
+<section class="mt-5 mb-5">
+    <h2 class="section-title">How Escrow Protects You</h2>
+    <div class="row g-3">
+        <div class="col-md-4">
+            <div class="card p-4 h-100">
+                <div class="d-inline-flex align-items-center justify-content-center mb-3" style="width:44px;height:44px;background:rgba(200,255,58,0.1);border-radius:12px;">
+                    <i class="fa-solid fa-lock text-accent"></i>
+                </div>
+                <h5 class="fw-bold">1. Pay Safely</h5>
+                <p class="text-muted small mb-0">Buyer's funds go into escrow — held safely, not sent to the seller yet.</p>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card p-4 h-100">
+                <div class="d-inline-flex align-items-center justify-content-center mb-3" style="width:44px;height:44px;background:rgba(200,255,58,0.1);border-radius:12px;">
+                    <i class="fa-solid fa-handshake text-accent"></i>
+                </div>
+                <h5 class="fw-bold">2. Meet & Verify</h5>
+                <p class="text-muted small mb-0">Meet on campus. Inspect the item. Chat in-app without sharing your phone.</p>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card p-4 h-100">
+                <div class="d-inline-flex align-items-center justify-content-center mb-3" style="width:44px;height:44px;background:rgba(200,255,58,0.1);border-radius:12px;">
+                    <i class="fa-solid fa-circle-check text-accent"></i>
+                </div>
+                <h5 class="fw-bold">3. Release Funds</h5>
+                <p class="text-muted small mb-0">Happy with the item? Confirm receipt and we release the funds to the seller.</p>
+            </div>
+        </div>
+    </div>
+</section>

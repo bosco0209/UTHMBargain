@@ -1,0 +1,109 @@
+﻿@model UTHMBargain.Models.ViewModels.ProductSearchViewModel
+@{
+    ViewData["Title"] = "Browse Listings";
+}
+
+<div class="row g-4">
+    <aside class="col-lg-3">
+        <div class="filter-sidebar">
+            <form method="get" asp-action="Index">
+                <h6>Search</h6>
+                <input type="text" name="Query" value="@Model.Query" class="form-control mb-3" placeholder="Search listings..." />
+
+                <h6>Category</h6>
+                <select name="CategoryId" class="form-select mb-3">
+                    <option value="">All Categories</option>
+                    @foreach (var c in Model.Categories)
+                    {
+                        <option value="@c.Id" selected="@(Model.CategoryId == c.Id)">@c.Name</option>
+                    }
+                </select>
+
+                <h6>Price (RM)</h6>
+                <div class="row g-2 mb-3">
+                    <div class="col-6"><input type="number" step="0.01" name="MinPrice" value="@Model.MinPrice" class="form-control" placeholder="Min" /></div>
+                    <div class="col-6"><input type="number" step="0.01" name="MaxPrice" value="@Model.MaxPrice" class="form-control" placeholder="Max" /></div>
+                </div>
+
+                <h6>Condition</h6>
+                <select name="Condition" class="form-select mb-3">
+                    <option value="">Any</option>
+                    @foreach (var v in Enum.GetValues<UTHMBargain.Models.ProductCondition>())
+                    {
+                        <option value="@v" selected="@(Model.Condition == v)">@v</option>
+                    }
+                </select>
+
+                <h6>Location</h6>
+                <select name="Location" class="form-select mb-3">
+                    <option value="">Any</option>
+                    <option value="Parit Raja" selected="@(Model.Location == "Parit Raja")">Parit Raja</option>
+                    <option value="Pagoh" selected="@(Model.Location == "Pagoh")">Pagoh</option>
+                </select>
+
+                <h6>Sort By</h6>
+                <select name="SortBy" class="form-select mb-3">
+                    <option value="newest" selected="@(Model.SortBy == "newest")">Newest</option>
+                    <option value="price_asc" selected="@(Model.SortBy == "price_asc")">Price: Low → High</option>
+                    <option value="price_desc" selected="@(Model.SortBy == "price_desc")">Price: High → Low</option>
+                </select>
+
+                <button type="submit" class="btn btn-primary-accent w-100">Apply Filters</button>
+                <a asp-action="Index" class="btn btn-outline-light w-100 mt-2">Clear</a>
+            </form>
+        </div>
+    </aside>
+
+    <div class="col-lg-9">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h2 class="section-title mb-0">All Listings <small class="text-muted fw-normal" style="font-size:1rem;">(@Model.Results.Count shown)</small></h2>
+            @if (User.Identity!.IsAuthenticated)
+            {
+                <a asp-action="Create" class="btn btn-primary-accent"><i class="fa-solid fa-plus me-1"></i> Sell Something</a>
+            }
+        </div>
+
+        @if (!Model.Results.Any())
+        {
+            <div class="empty"><i class="fa-solid fa-box-open"></i><p>No listings match your filters.</p></div>
+        }
+        else
+        {
+            <div class="row g-3">
+                @foreach (var p in Model.Results)
+                {
+                    <div class="col-6 col-md-4">
+                        <a asp-action="Details" asp-route-id="@p.Id" class="text-decoration-none text-reset">
+                            <div class="card product-card h-100">
+                                <img src="@(p.Images.FirstOrDefault()?.Url ?? "/images/placeholder.svg")" class="card-img-top" alt="@p.Title" />
+                                <div class="card-body">
+                                    <div class="price-tag">RM @p.Price.ToString("F2")</div>
+                                    <div class="fw-semibold mt-1 text-truncate">@p.Title</div>
+                                    <div class="small text-muted mt-1"><i class="fa-solid @p.Category!.Icon me-1"></i>@p.Category.Name</div>
+                                    <div class="d-flex justify-content-between align-items-center mt-2">
+                                        <span class="badge badge-cond">@p.Condition</span>
+                                        <small class="text-muted"><i class="fa-solid fa-location-dot"></i> @p.Location</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </a>
+                    </div>
+                }
+            </div>
+
+            @if (Model.TotalPages > 1)
+            {
+                <nav class="mt-4">
+                    <ul class="pagination justify-content-center">
+                        @for (var i = 1; i <= Model.TotalPages; i++)
+                        {
+                            <li class="page-item @(i == Model.Page ? "active" : "")">
+                                <a class="page-link" href="?Page=@i&Query=@Model.Query&CategoryId=@Model.CategoryId&MinPrice=@Model.MinPrice&MaxPrice=@Model.MaxPrice&Condition=@Model.Condition&Location=@Model.Location&SortBy=@Model.SortBy">@i</a>
+                            </li>
+                        }
+                    </ul>
+                </nav>
+            }
+        }
+    </div>
+</div>

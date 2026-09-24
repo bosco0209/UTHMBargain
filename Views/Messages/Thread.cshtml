@@ -1,0 +1,77 @@
+﻿@model UTHMBargain.Models.Conversation
+@using Microsoft.AspNetCore.Identity
+@inject UserManager<UTHMBargain.Models.ApplicationUser> UserManager
+@{
+    ViewData["Title"] = "Chat";
+    var uid = UserManager.GetUserId(User);
+    var other = Model.BuyerId == uid ? Model.Seller : Model.Buyer;
+}
+}
+
+<div class="row g-3">
+    <div class="col-lg-8">
+        <div class="chat-window">
+            <div class="chat-header d-flex justify-content-between align-items-center">
+                <div>
+                    <strong>@other!.FullName</strong>
+                    <div class="small text-muted">@other.Faculty · @other.Campus</div>
+                </div>
+                <a asp-action="Index" class="btn btn-sm btn-outline-light"><i class="fa-solid fa-arrow-left me-1"></i>Inbox</a>
+            </div>
+
+            <div class="chat-messages" id="messages">
+                @foreach (var m in Model.Messages.OrderBy(x => x.SentAt))
+                {
+                    var mine = m.SenderId == uid;
+                    <div class="d-flex flex-column @(mine ? "align-items-end" : "align-items-start")">
+                        <div class="msg-bubble @(mine ? "msg-mine" : "msg-them")" data-mid="@m.Id">@m.Body</div>
+                        <div class="msg-time">@m.SentAt.ToLocalTime().ToString("dd MMM HH:mm")</div>
+                    </div>
+                }
+            </div>
+            <form asp-action="Send" method="post" class="chat-input d-flex gap-2">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="conversationId" value="@Model.Id" />
+                <input type="text" name="body" required class="form-control" placeholder="Type your message..." autocomplete="off" />
+                <button type="submit" class="btn btn-primary-accent"><i class="fa-solid fa-paper-plane"></i></button>
+            </form>
+        </div>
+    </div>
+
+    <div class="col-lg-4">
+        <div class="card p-3">
+            <div class="text-muted small mb-2">About</div>
+            <img src="@(Model.Product!.Images.FirstOrDefault()?.Url ?? "/images/placeholder.svg")" style="width:100%;aspect-ratio:1/1;object-fit:cover;border-radius:10px;" />
+            <div class="fw-semibold mt-2">@Model.Product.Title</div>
+            <div class="price-tag">RM @Model.Product.Price.ToString("F2")</div>
+            <div class="small text-muted mt-1"><i class="fa-solid fa-location-dot"></i> @Model.Product.Location</div>
+            <a asp-controller="Products" asp-action="Details" asp-route-id="@Model.Product.Id" class="btn btn-outline-primary mt-3">View Listing</a>
+        </div>
+        <div class="alert alert-info small mt-3"><i class="fa-solid fa-shield-halved me-1"></i>Never share your phone number or bank details. Use the escrow "Buy" button to trade safely.</div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        const box = document.getElementById('messages');
+        box.scrollTop = box.scrollHeight;
+        let lastId = @(Model.Messages.Any() ? Model.Messages.Max(m => m.Id) : 0);
+        async function poll() {
+            try {
+                const r = await fetch('@Url.Action("Poll", "Messages")?conversationId=@Model.Id&afterId=' + lastId);
+                if (!r.ok) return;
+                const arr = await r.json();
+                arr.forEach(m => {
+                    const wrap = document.createElement('div');
+                    wrap.className = 'd-flex flex-column ' + (m.mine ? 'align-items-end' : 'align-items-start');
+                    wrap.innerHTML = '<div class="msg-bubble ' + (m.mine ? 'msg-mine' : 'msg-them') + '">' + escapeHtml(m.body) + '</div><div class="msg-time">' + new Date(m.sentAt).toLocaleString() + '</div>';
+                    box.appendChild(wrap);
+                    lastId = Math.max(lastId, m.id);
+                });
+                if (arr.length) box.scrollTop = box.scrollHeight;
+            } catch (e) { }
+        }
+        function escapeHtml(s) { return s.replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", "\"": "&quot;", "'": "&#39;" }[c])); }
+        setInterval(poll, 3000);
+    </script>
+}

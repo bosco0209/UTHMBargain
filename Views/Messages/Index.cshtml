@@ -1,0 +1,37 @@
+﻿@model List<UTHMBargain.Models.Conversation>
+@using Microsoft.AspNetCore.Identity
+@using UTHMBargain.Models
+@inject UserManager<ApplicationUser> UserManager
+@{
+    ViewData["Title"] = "Messages";
+    var uid = UserManager.GetUserId(User);
+}
+<h2 class="section-title">Messages</h2>
+@if (!Model.Any())
+{
+    <div class="empty"><i class="fa-solid fa-comments"></i><p>No conversations yet. Start one from a product page!</p></div>
+}
+else
+{
+    <div class="chat-list">
+        @foreach (var c in Model)
+        {
+            var other = c.BuyerId == uid ? c.Seller : c.Buyer;
+            var lastMsg = c.Messages.OrderByDescending(m => m.SentAt).FirstOrDefault();
+            <a asp-action="Thread" asp-route-id="@c.Id" class="chat-item">
+                <img class="chat-thumb" src="@(c.Product!.Images.FirstOrDefault()?.Url ?? "/images/placeholder.svg")" />
+                <div class="flex-fill">
+                    <div class="d-flex justify-content-between">
+                        <strong>@other!.FullName</strong>
+                        <small class="text-muted">@c.LastMessageAt.ToLocalTime().ToString("dd MMM HH:mm")</small>
+                    </div>
+                    <div class="small text-muted text-truncate">@c.Product.Title · RM @c.Product.Price.ToString("F2")</div>
+                    @if (lastMsg != null)
+                    {
+                        <div class="small text-truncate" style="color:var(--text)">@lastMsg.Body</div>
+                    }
+                </div>
+            </a>
+        }
+    </div>
+}

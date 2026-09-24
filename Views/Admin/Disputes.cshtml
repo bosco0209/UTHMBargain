@@ -1,0 +1,51 @@
+﻿@model List<UTHMBargain.Models.EscrowTransaction>
+@{
+    ViewData["Title"] = "Disputes";
+}
+<h2 class="section-title">Open Disputes</h2>
+@if (!Model.Any())
+{
+    <div class="empty"><i class="fa-solid fa-check-circle"></i><p>No open disputes.</p></div>
+}
+else
+{
+    @foreach (var e in Model)
+    {
+        <div class="card p-4 mb-3">
+            <div class="d-flex justify-content-between flex-wrap">
+                <div>
+                    <span class="escrow-code">@e.Code</span>
+                    <span class="escrow-status status-Disputed ms-2">@e.Status</span>
+                </div>
+                <div class="price-tag">RM @e.Amount.ToString("F2")</div>
+            </div>
+            <hr />
+            <div class="row">
+                <div class="col-md-4"><strong>Product:</strong> @e.Product!.Title</div>
+                <div class="col-md-4"><strong>Buyer:</strong> @e.Buyer!.FullName</div>
+                <div class="col-md-4"><strong>Seller:</strong> @e.Seller!.FullName</div>
+            </div>
+            <div class="alert alert-danger mt-3 mb-3">
+                <strong>Reason:</strong> @e.DisputeReason
+            </div>
+            <form asp-action="ResolveDispute" method="post">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="id" value="@e.Id" />
+                <div class="row g-2">
+                    <div class="col-md-3">
+                        <select name="decision" class="form-select">
+                            <option value="refund">Refund Buyer</option>
+                            <option value="release">Release to Seller</option>
+                        </select>
+                    </div>
+                    <div class="col-md-6">
+                        <input name="note" class="form-control" placeholder="Admin note (optional)" />
+                    </div>
+                    <div class="col-md-3">
+                        <button class="btn btn-primary-accent w-100">Resolve</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    }
+}

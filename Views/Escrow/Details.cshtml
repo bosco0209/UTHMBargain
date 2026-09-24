@@ -1,0 +1,117 @@
+﻿@model UTHMBargain.Models.EscrowTransaction
+@using Microsoft.AspNetCore.Identity
+@using UTHMBargain.Models
+@inject UserManager<ApplicationUser> UserManager
+@{
+    ViewData["Title"] = "Escrow " + Model.Code;
+    var uid = UserManager.GetUserId(User);
+    var isBuyer = Model.BuyerId == uid;
+    var isSeller = Model.SellerId == uid;
+}
+
+<div class="row g-4">
+    <div class="col-lg-8">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <div>
+                <div class="text-muted small">Escrow Code</div>
+                <div><span class="escrow-code">@Model.Code</span></div>
+            </div>
+            <span class="escrow-status status-@Model.Status">@Model.Status</span>
+        </div>
+
+        <div class="card p-4">
+            <div class="row align-items-center">
+                <div class="col-md-4">
+                    <img src="@(Model.Product!.Images.FirstOrDefault()?.Url ?? "/images/placeholder.svg")" style="width:100%;aspect-ratio:1/1;object-fit:cover;border-radius:10px;" />
+                </div>
+                <div class="col-md-8">
+                    <h4 class="mb-1">@Model.Product.Title</h4>
+                    <div class="price-tag" style="font-size:1.5rem;">RM @Model.Amount.ToString("F2")</div>
+                    <div class="small text-muted mt-2">
+                        <div><i class="fa-solid fa-user me-1"></i>Buyer: @Model.Buyer!.FullName</div>
+                        <div><i class="fa-solid fa-store me-1"></i>Seller: @Model.Seller!.FullName</div>
+                        <div><i class="fa-regular fa-calendar me-1"></i>Started: @Model.CreatedAt.ToLocalTime().ToString("dd MMM yyyy HH:mm")</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="escrow-steps">
+                <div class="escrow-step done"><div class="dot"><i class="fa-solid fa-lock"></i></div><div class="lbl">Funds held</div></div>
+                <div class="escrow-step @(Model.Status == UTHMBargain.Models.EscrowStatus.Shipped || Model.Status == UTHMBargain.Models.EscrowStatus.Completed ? "done" : "")"><div class="dot"><i class="fa-solid fa-hand-holding"></i></div><div class="lbl">Handed over</div></div>
+                <div class="escrow-step @(Model.Status == UTHMBargain.Models.EscrowStatus.Completed ? "done" : "")"><div class="dot"><i class="fa-solid fa-check"></i></div><div class="lbl">Released</div></div>
+            </div>
+
+            @if (!string.IsNullOrEmpty(Model.DisputeReason))
+            {
+                <div class="alert alert-danger">
+                    <strong>Dispute:</strong> @Model.DisputeReason
+                    @if (!string.IsNullOrEmpty(Model.AdminNote))
+                    {
+                        <hr />
+                        <strong>Admin note:</strong> 
+                        @Model.AdminNote
+                    }
+                </div>
+            }
+
+            <div class="d-flex flex-wrap gap-2 mt-3">
+                @if (Model.Status == UTHMBargain.Models.EscrowStatus.Pending && isSeller)
+                {
+                    <form asp-action="MarkShipped" asp-route-id="@Model.Id" method="post">
+                        @Html.AntiForgeryToken()
+                        <button class="btn btn-primary-accent"><i class="fa-solid fa-hand-holding me-1"></i>Mark as Handed Over</button>
+                    </form>
+                }
+                @if ((Model.Status == UTHMBargain.Models.EscrowStatus.Pending || Model.Status == UTHMBargain.Models.EscrowStatus.Shipped) && isBuyer)
+                {
+                    <form asp-action="ConfirmReceipt" asp-route-id="@Model.Id" method="post">
+                        @Html.AntiForgeryToken()
+                        <button class="btn btn-primary-accent" onclick="return confirm('Confirm you received the item? Funds will be released.');"><i class="fa-solid fa-check me-1"></i>Confirm Receipt & Release Funds</button>
+                    </form>
+                }
+                @if (Model.Status == UTHMBargain.Models.EscrowStatus.Pending)
+                {
+                    <form asp-action="Cancel" asp-route-id="@Model.Id" method="post">
+                        @Html.AntiForgeryToken()
+                        <button class="btn btn-outline-light" onclick="return confirm('Cancel escrow?');">Cancel</button>
+                    </form>
+                }
+                @if (Model.Status is UTHMBargain.Models.EscrowStatus.Pending or UTHMBargain.Models.EscrowStatus.Shipped)
+                {
+                    <button class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#disputeModal"><i class="fa-solid fa-triangle-exclamation me-1"></i>Raise Dispute</button>
+                }
+                @if (Model.Status == UTHMBargain.Models.EscrowStatus.Completed && ViewBag.Rating == null)
+                {
+                    <a asp-action="Rate" asp-route-id="@Model.Id" class="btn btn-primary-accent"><i class="fa-solid fa-star me-1"></i>Rate this Transaction</a>
+                }
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-4">
+        <div class="alert alert-info">
+            <h5 class="fw-semibold mb-2"><i class="fa-solid fa-shield-halved me-1 text-accent"></i>How it works</h5>
+            <ol class="small mb-0 ps-3">
+                <li>Buyer's funds are locked in escrow</li>
+                <li>Seller hands over item on campus</li>
+                <li>Buyer confirms receipt → funds released</li>
+                <li>Dispute? Admin steps in to resolve</li>
+            </ol>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="disputeModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content" style="background:var(--surface);border:1px solid var(--border);color:var(--text);">
+            <form asp-action="Dispute" method="post">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="id" value="@Model.Id" />
+                <div class="modal-header"><h5 class="modal-title">Raise Dispute</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+                <div class="modal-body">
+                    <textarea name="reason" required rows="4" class="form-control" placeholder="Explain the issue clearly..."></textarea>
+                </div>
+                <div class="modal-footer"><button class="btn btn-outline-light" data-bs-dismiss="modal">Cancel</button><button type="submit" class="btn btn-danger">Submit</button></div>
+            </form>
+        </div>
+    </div>
+</div>
